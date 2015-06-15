@@ -11,11 +11,31 @@
  */
 
 var TodoBox = React.createClass({
+  getInitialState: function(){
+    return{
+      data: []  
+    };
+  },
+
+  componentDidMount: function(){
+    $.ajax({
+      url: this.props.url,
+      dataType: 'json',
+      chache: false,
+      success: function(data){
+        this.setState({data: data}); 
+      }.bind(this),
+      error: function(xhr, status, err){
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
+
   render: function() {
     return (
       <div className='todo-box'>
         <TableTitle />
-        <TodoTable todos= {this.props.todos} />
+        <TodoTable todos= {this.state.data} />
         <TodoForm/>
       </div>
     );
@@ -101,15 +121,4 @@ var TodoForm = React.createClass({
   }
 });  
 
-var TODOS = [
-  {
-    content: "First todo",
-    deadline: "2/07/2015"
-  },
-  {
-    content: "Second todo",
-    deadline: "2/07/2015"
-  }
-]
-
-React.render(<TodoBox todos={TODOS} />, document.getElementById('content') )
+React.render(<TodoBox url="todos.json" pollInterval={2000} />, document.getElementById('content') )
