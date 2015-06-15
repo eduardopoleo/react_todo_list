@@ -17,6 +17,21 @@ var TodoBox = React.createClass({
     };
   },
 
+  handleTodoSubmit: function(todo){
+    $.ajax({
+      url: this.props.url,
+      dataType: 'json',
+      type: 'POST',
+      data: todo,
+      success: function(data) {
+        this.setState({data: data});
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
+
   componentDidMount: function(){
     $.ajax({
       url: this.props.url,
@@ -35,8 +50,8 @@ var TodoBox = React.createClass({
     return (
       <div className='todo-box'>
         <TableTitle />
-        <TodoTable todos= {this.state.data} />
-        <TodoForm/>
+        <TodoTable todos = {this.state.data} />
+        <TodoForm onTodoSubmit={this.handleTodoSubmit}/>
       </div>
     );
   }
@@ -110,11 +125,24 @@ var TodoRow = React.createClass({
 });  
 
 var TodoForm = React.createClass({
+  handleSubmit: function(e){
+    e.preventDefault();
+    var content = React.findDOMNode(this.refs.todoContent).value.trim() 
+    var deadline = React.findDOMNode(this.refs.todoDeadline).value.trim() 
+
+    if (!content || !deadline){
+      return;
+    }
+
+    this.props.onTodoSubmit({content: content, deadline: deadline});
+    React.findDOMNode(this.refs.todoContent).value = "";
+    React.findDOMNode(this.refs.todoDeadline).value = "";
+  },
   render: function() {
     return (
-      <form>
-        <input type='text' placeholder='Your Todo' />
-        <input type='text' placeholder='Deadline' />
+      <form className='todos-form' onSubmit={this.handleSubmit}>
+        <input type='text' ref='todoContent' placeholder='Your Todo' />
+        <input type='text' ref='todoDeadline' placeholder='Deadline' />
         <input type='submit' />
       </form>
     );
